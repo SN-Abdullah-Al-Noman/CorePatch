@@ -1,6 +1,5 @@
 package org.lsposed.corepatch
 
-import org.lsposed.corepatch.App.Companion.rwPrefs
 import org.lsposed.corepatch.XposedHelper.prefs
 
 object Config {
@@ -16,73 +15,31 @@ object Config {
     const val DISABLE_VERIFICATION_AGENT = "disable_verification_agent"
     const val BYPASS_BLOCK = "bypass_block"
 
-    private val allConfig = arrayOf(
-        BYPASS_DOWNGRADE,
-        BYPASS_MIN_SDK,
-        BYPASS_VERIFICATION,
-        BYPASS_RESOURCE_ARSC_RESTRICTIONS,
-        BYPASS_DIGEST,
-        USE_PREVIOUS_SIGNATURES,
-        ALLOW_HIDDEN_APIS_FOR_SYSTEM_APPS,
-        BYPASS_SHARED_USER,
-        BYPASS_BLOCK
-    )
-
     fun printAllConfig() {
-        allConfig.forEach {
-            XposedHelper.log("$it: ${prefs.getBoolean(it, false)}")
-        }
+        XposedHelper.log("$BYPASS_VERIFICATION: ${prefs.getBoolean(BYPASS_VERIFICATION, false)}")
     }
 
-    fun isBypassDowngradeEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_DOWNGRADE, false)
-    }
+    fun isBypassVerificationEnabled(): Boolean = prefs.getBoolean(BYPASS_VERIFICATION, false)
 
-    fun isBypassMinSdkEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_MIN_SDK, false)
-    }
+    // Removed features are hard-disabled so stale preferences cannot reactivate them.
+    fun isBypassDowngradeEnabled() = false
+    fun isBypassMinSdkEnabled() = false
+    fun isBypassResourceArscRestrictionsEnabled() = false
+    fun isBypassDigestEnabled() = false
+    fun isBypassExactSignatureMatch() = false
+    fun isUsePreviousSignaturesEnabled() = false
+    fun isAllowHiddenApisForSystemAppsEnabled() = false
+    fun isBypassSharedUserEnabled() = false
+    fun isDisableVerificationAgentEnabled() = false
+    fun isBypassBlockEnabled() = false
 
-    fun isBypassVerificationEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_VERIFICATION, false)
-    }
-
-    fun isBypassResourceArscRestrictionsEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_RESOURCE_ARSC_RESTRICTIONS, false)
-    }
-
-    fun isBypassDigestEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_DIGEST, false)
-    }
-
-    fun isBypassExactSignatureMatch(): Boolean {
-        return prefs.getBoolean(BYPASS_EXACT_SIGNATURE_MATCH, false)
-    }
-
-    fun isUsePreviousSignaturesEnabled(): Boolean {
-        return prefs.getBoolean(USE_PREVIOUS_SIGNATURES, false)
-    }
-
-    fun isAllowHiddenApisForSystemAppsEnabled(): Boolean {
-        return prefs.getBoolean(ALLOW_HIDDEN_APIS_FOR_SYSTEM_APPS, false)
-    }
-
-    fun isBypassSharedUserEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_SHARED_USER, false)
-    }
-
-    fun isDisableVerificationAgentEnabled(): Boolean {
-        return prefs.getBoolean(DISABLE_VERIFICATION_AGENT, false)
-    }
-
-    fun isBypassBlockEnabled(): Boolean {
-        return prefs.getBoolean(BYPASS_BLOCK, false)
-    }
-
-    fun getConfig(key: String): Boolean {
-        return rwPrefs?.getBoolean(key, false) ?: false
-    }
+    fun getConfig(key: String): Boolean = if (key == BYPASS_VERIFICATION) {
+        prefs.getBoolean(BYPASS_VERIFICATION, false)
+    } else false
 
     fun setConfig(key: String, value: Boolean) {
-        rwPrefs?.edit()?.putBoolean(key, value)?.apply()
+        if (key == BYPASS_VERIFICATION) {
+            App.rwPrefs?.edit()?.putBoolean(BYPASS_VERIFICATION, value)?.apply()
+        }
     }
 }
